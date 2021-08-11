@@ -70,6 +70,8 @@ static char *kstrdupcase(const char *str, gfp_t gfp, bool to_upper)
 	return ret;
 }
 
+static void dual_role_changed_work(struct work_struct *work);
+
 void dual_role_instance_changed(struct dual_role_phy_instance *dual_role)
 {
 	dev_info(&dual_role->dev, "%s\n", __func__);
@@ -142,6 +144,8 @@ __dual_role_register(struct device *parent,
 	if (rc)
 		goto dev_set_name_failed;
 
+	INIT_WORK(&dual_role->changed_work, dual_role_changed_work);
+	
 	rc = device_init_wakeup(dev, true);
 	if (rc)
 		goto wakeup_init_failed;
@@ -490,6 +494,17 @@ out:
 	free_page((unsigned long)prop_buf);
 
 	return ret;
+}
+
+static void dual_role_changed_work(struct work_struct *work)
+{
+	struct dual_role_phy_instance *dual_role =
+	    container_of(work, struct dual_role_phy_instance,
+			 changed_work);
+
+	dev_dbg(&dual_role->dev, "%s\n", __func__);
+	sysfs_update_group(&dual_role->dev.kobj, &dual_role_attr_group);
+	kobject_uevent(&dual_role->dev.kobj, KOBJ_CHANGE);
 }
 
 /******************* Module Init ***********************************/

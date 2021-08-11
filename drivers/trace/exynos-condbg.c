@@ -1571,7 +1571,7 @@ static void set_param(set_param_fn_t *fn)
 int ecd_start_binary(unsigned long jump_addr)
 {
 	/* address information */
-	set_param_fn_t fn[SZ_256];
+	set_param_fn_t fn[SZ_256]= {0, };
 
 	/* Set/Get parameter */
 	set_param(fn);
